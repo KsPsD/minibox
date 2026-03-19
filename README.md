@@ -17,10 +17,10 @@ MiniBox is a minimal container runtime that aims to be fast, lightweight, and ea
 
 ## Features
 
-- 🚀 **Fast startup** — No GC, minimal overhead
-- 💾 **Low memory** — Rust-native, no runtime bloat
+- 🚀 **Fast startup** — No GC, target cold start <100ms
+- 💾 **Low memory** — Rust-native, dynamic VM memory with balloon
 - 🖥️ **Desktop GUI** — Tauri-based app (lightweight alternative to Electron)
-- 📦 **OCI compatible** — Works with standard container images
+- 📦 **OCI compatible** — Works with standard container images from Docker Hub
 - 🔒 **Secure by default** — Memory-safe runtime with namespace/cgroup isolation
 
 ## Architecture
@@ -36,7 +36,8 @@ MiniBox is a minimal container runtime that aims to be fast, lightweight, and ea
 └──────────────┬───────────────┘
                │ syscalls
 ┌──────────────▼───────────────┐
-│  minibox-runtime             │  OCI runtime (namespace, cgroup)
+│  minibox-runtime             │  OCI runtime (namespace, cgroup,
+│                              │  overlayfs, pivot_root)
 └──────────────────────────────┘
 ```
 
@@ -47,13 +48,13 @@ MiniBox is a minimal container runtime that aims to be fast, lightweight, and ea
 cargo install --path crates/minibox-cli
 
 # Run a container
-minibox run alpine /bin/sh
+minibox run ubuntu:latest /bin/bash
 
 # List running containers
 minibox ps
 
 # Pull an image
-minibox pull ubuntu:latest
+minibox pull alpine:latest
 ```
 
 ## Build from Source
@@ -86,19 +87,17 @@ minibox/
 └── gui/                   # Tauri + React desktop app
 ```
 
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Runtime | Rust, Linux namespaces, cgroup v2 |
-| Daemon | Rust, Tokio, Axum |
-| CLI | Rust |
-| GUI | Tauri v2, React, TypeScript |
-| Spec | OCI Runtime / Image Spec |
-
 ## Roadmap
 
-See [GitHub Issues](https://github.com/KsPsD/minibox/issues) for planned features and current progress.
+| Phase | Description | Goal |
+|-------|------------|------|
+| **1** | Linux Runtime + OCI Spec | `minibox run ubuntu /bin/bash` works |
+| **2** | Image Management | Pull from Docker Hub, layer management |
+| **3** | macOS Integration | Virtualization.framework + lightweight kernel |
+| **4** | Performance | Memory balloon, VirtioFS, cold start <100ms |
+| **5** | Desktop App | Tauri GUI, docker-compose compat |
+
+See [GitHub Issues](https://github.com/KsPsD/minibox/issues) for detailed tasks.
 
 ## Contributing
 
@@ -109,6 +108,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [youki](https://github.com/containers/youki) — Rust OCI runtime
 - [Tauri](https://tauri.app/) — Lightweight desktop framework
 - [OCI Runtime Spec](https://github.com/opencontainers/runtime-spec)
+- [OCI Image Spec](https://github.com/opencontainers/image-spec)
+- [vhost-device](https://github.com/rust-vmm/vhost-device) — Rust VirtioFS
 
 ## License
 
